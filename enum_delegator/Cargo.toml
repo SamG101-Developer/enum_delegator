@@ -1,0 +1,5 @@
+[package]
+name = "enum_delegator"
+version = "0.1.0"
+edition = "2024"
+
