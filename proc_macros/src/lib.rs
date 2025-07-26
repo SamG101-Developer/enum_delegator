@@ -16,7 +16,8 @@ static LOOKUP_TABLE: Lazy<Mutex<HashMap<String, Vec<String>>>> =
 /// the enum.
 #[proc_macro_attribute]
 pub fn define_delegator(_attr: TokenStream, item: TokenStream) -> TokenStream {
-    let input = parse_macro_input!(item as ItemTrait);
+    let clone_item = item.clone();
+    let input = parse_macro_input!(clone_item as ItemTrait);
     let trait_name = &input.ident;
     let methods = input
         .items
@@ -25,19 +26,14 @@ pub fn define_delegator(_attr: TokenStream, item: TokenStream) -> TokenStream {
         .collect::<Vec<_>>();
 
     // Convert the trait name to a string and save the methods in the lookup table.
-    let trait_name_str = trait_name.to_string();
     let mut lookup_table = LOOKUP_TABLE.lock().unwrap();
     let method_names = methods
         .iter()
         .map(|method| quote! { #method }.to_string())
         .collect::<Vec<_>>();
-    lookup_table.insert(trait_name_str.clone(), method_names);
+    lookup_table.insert(trait_name.to_string(), method_names);
     
-    let expanded = quote! {
-        #input
-    };
-    
-    TokenStream::from(expanded)
+    item
 }
 
 
